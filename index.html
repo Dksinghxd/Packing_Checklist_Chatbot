@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Packing List Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'travel-primary': '#0ea5e9',
+                        'travel-primary-dark': '#0284c7',
+                        'text-dark': '#1f2937',
+                        'subtle-border': 'rgba(0,0,0,0.1)'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 font-sans min-h-screen transition-colors duration-300">
+    <!-- Theme Toggle -->
+    <div class="fixed top-4 right-4 z-50">
+        <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
+            <i class="fas fa-sun text-yellow-500 dark:hidden"></i>
+            <i class="fas fa-moon text-blue-400 hidden dark:block"></i>
+        </button>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="bg-white/80 dark:bg-gray-800/80 shadow-md transition-colors duration-300 sticky top-0 z-40">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <a href="/" class="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                    <i class="fas fa-suitcase text-travel-primary"></i>
+                    Packing List Generator
+                </a>
+                <div class="flex items-center gap-4">
+                    <select id="tripTypeSelect" class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-travel-primary">
+                        <option value="beach">Beach Vacation</option>
+                        <option value="hiking">Hiking/Camping</option>
+                        <option value="business">Business Trip</option>
+                        <option value="city">City Break</option>
+                        <option value="winter">Winter Sports</option>
+                        <option value="backpacking">Backpacking</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Hero Section -->
+        <section class="hero-section text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4">Smart Packing List Generator</h1>
+            <p class="text-xl opacity-90">Create personalized packing lists for any trip</p>
+        </section>
+
+        <!-- Weather Section -->
+        <div class="max-w-4xl mx-auto mb-8">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-colors duration-300 p-6">
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">Destination Weather</h2>
+                <div id="weatherInfo" class="flex flex-col items-center justify-center p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div class="text-center">
+                        <i class="fas fa-map-marker-alt text-travel-primary text-2xl mb-2"></i>
+                        <p class="text-gray-600 dark:text-gray-300">Enter your destination to see the weather forecast</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Interface -->
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-colors duration-300">
+                <!-- Chat Messages Area -->
+                <div id="chatContainer" class="chat-container">
+                    <!-- Messages will be inserted here by JS -->
+                </div>
+
+                <!-- Input Area -->
+                <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                    <div class="flex items-end gap-2">
+                        <!-- Image Upload -->
+                        <button id="image-button" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" title="Upload destination image">
+                            <i class="fas fa-image text-gray-600 dark:text-gray-300"></i>
+                        </button>
+                        <input type="file" id="image-input" class="hidden" accept="image/*">
+                        
+                        <!-- Text Input -->
+                        <div class="flex-1 relative">
+                            <textarea id="prompt" 
+                                    rows="1"
+                                    class="w-full p-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:outline-none focus:border-travel-primary bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                                    placeholder="Describe your trip (destination, duration, activities)..."></textarea>
+                        </div>
+
+                        <!-- Send Button -->
+                        <button id="submit" class="primary-button p-3 rounded-lg">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+
+                    <!-- Image Preview -->
+                    <img id="image-preview-overlay" class="hidden mt-2 max-h-32 rounded-lg" alt="Preview">
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <section class="mt-12">
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6 text-center">Features</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="feature-card">
+                    <i class="fas fa-list-check feature-icon"></i>
+                    <h3 class="text-xl font-semibold mb-2 text-gray-800 dark:text-white">Smart Lists</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Personalized packing lists based on your trip type and destination</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-cloud-sun feature-icon"></i>
+                    <h3 class="text-xl font-semibold mb-2 text-gray-800 dark:text-white">Weather-Aware</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Recommendations based on destination climate</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-suitcase feature-icon"></i>
+                    <h3 class="text-xl font-semibold mb-2 text-gray-800 dark:text-white">Activity-Based</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Special items for specific activities and adventures</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-800 shadow-md mt-12 transition-colors duration-300">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <p class="text-center text-gray-600 dark:text-gray-300">© 2024 Packing List Generator. All rights reserved.</p>
+                <div class="flex gap-4 mt-4 md:mt-0">
+                    <a href="#" class="text-gray-600 dark:text-gray-300 hover:text-travel-primary transition-colors">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="#" class="text-gray-600 dark:text-gray-300 hover:text-travel-primary transition-colors">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-600 dark:text-gray-300 hover:text-travel-primary transition-colors">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
