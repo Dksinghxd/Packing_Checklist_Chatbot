@@ -303,6 +303,16 @@ function handleSendMessage() {
     const userMessageElement = createMessageElement(userBubbleContent, 'user');
     chatArea.appendChild(userMessageElement);
 
+    // Extract city and fetch weather
+    const city = extractCityFromMessage(userMessage);
+    if (city) {
+        fetchWeather(city).then(weatherData => {
+            updateWeatherDisplay(weatherData);
+        }).catch(error => {
+            console.error('Weather fetch error:', error);
+        });
+    }
+
     const stagedFile = { ...userInteraction.file };
     messageInput.value = "";
     clearImagePreview();
@@ -484,7 +494,7 @@ imageInput.addEventListener('change', (e) => {
 // Function to fetch weather data
 async function fetchWeather(city) {
     try {
-        const response = await fetch(`${WEATHER_API_URL}?q=${city}&appid=${WEATHER_API_KEY}&units=metric`);
+        const response = await fetch(`${WEATHER_API_URL}?key=${WEATHER_API_KEY}&q=${city}&aqi=no`);
         if (!response.ok) {
             throw new Error('Weather data not found');
         }
@@ -509,18 +519,18 @@ function updateWeatherDisplay(weatherData) {
         return;
     }
 
-    const iconClass = weatherIcons[weatherData.weather[0].icon] || 'fas fa-cloud';
-    const temp = Math.round(weatherData.main.temp);
-    const feelsLike = Math.round(weatherData.main.feels_like);
-    const humidity = weatherData.main.humidity;
-    const windSpeed = Math.round(weatherData.wind.speed * 3.6); // Convert m/s to km/h
+    const iconClass = 'fas fa-cloud'; // Default icon
+    const temp = Math.round(weatherData.current.temp_c);
+    const feelsLike = Math.round(weatherData.current.feelslike_c);
+    const humidity = weatherData.current.humidity;
+    const windSpeed = Math.round(weatherData.current.wind_kph);
 
     weatherInfo.innerHTML = `
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
             <div class="flex flex-col items-center">
                 <i class="${iconClass} text-4xl text-travel-primary mb-2"></i>
-                <h3 class="text-xl font-semibold text-gray-800 dark:text-white">${weatherData.name}</h3>
-                <p class="text-gray-600 dark:text-gray-300">${weatherData.weather[0].description}</p>
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white">${weatherData.location.name}</h3>
+                <p class="text-gray-600 dark:text-gray-300">${weatherData.current.condition.text}</p>
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div class="text-center">
@@ -546,10 +556,22 @@ function updateWeatherDisplay(weatherData) {
 
 // Function to extract city from user message
 function extractCityFromMessage(message) {
-    // Simple city extraction - you might want to improve this
-    const cityMatch = message.match(/\b(in|at|to|from)\s+([A-Za-z\s]+)(?:\s+for|\s+on|\s+from|\s+to|$)/i);
-    if (cityMatch && cityMatch[2]) {
-        return cityMatch[2].trim();
+    if (!message) return null;
+    
+    // Convert to lowercase for easier matching
+    message = message.toLowerCase();
+    
+    // First try to find location after prepositions
+    const prepositionMatch = message.match(/\b(?:in|at|to|from)\s+([A-Za-z\s]+)(?:\s+for|\s+on|\s+from|\s+to|$)/i);
+    if (prepositionMatch && prepositionMatch[1]) {
+        return prepositionMatch[1].trim();
     }
+    
+    // If no preposition match, try to find location at the start of the message
+    const startMatch = message.match(/^(?:i'?m?\s+going\s+to\s+)?([A-Za-z\s]+)(?:\s+for|\s+on|\s+from|\s+to|$)/i);
+    if (startMatch && startMatch[1]) {
+        return startMatch[1].trim();
+    }
+    
     return null;
 }
